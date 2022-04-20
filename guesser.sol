@@ -81,10 +81,10 @@ contract RandomNumberConsumer is VRFConsumerBase {
      }
 
     function getRandomNumber(uint256 guess, uint256 amt) public returns (bytes32 requestId) {
-        require(guess<95, "Must guess lower than 95");
+        require(guess<96, "Must guess lower than 95");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         LINK.transferFrom(msg.sender, address(this), fee);
-        require(amt < stakedToken.balanceOf(address(this)) / 50 , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
+        
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
@@ -116,7 +116,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
         if(randomness%100 < odds){
-            winnings[betid] = (100 * betAmount)/(odds+4);
+            winnings[betid] = (100 * betAmount)/(odds+3);
             stakedToken.transfer(Guesser, winnings[betid]);
         }else{
             stakedToken.transfer(Guesser, 1);
@@ -170,7 +170,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
         }
         else {
             amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3) ;
-            require(stakedToken.transfer(address(0x7d28fa576a4e08922B01e897CE4f5517AD351578), (amt / 50)));
+            require(stakedToken.transfer(address(this), (amt / 50)));
             require(stakedToken.transfer(msg.sender, amt * 49 / 50));
             
             unchecked {
