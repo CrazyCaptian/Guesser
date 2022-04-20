@@ -24,7 +24,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-contract RandomNumberConsumer is VRFConsumerBase {
+contract ForgeGuess is VRFConsumerBase {
     
     bytes32 internal keyHash;
     uint256 internal fee;
@@ -40,7 +40,6 @@ contract RandomNumberConsumer is VRFConsumerBase {
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
-    uint256 public amt = 0;
     uint256 public ratio;
     mapping(address => uint256) private _balances;
     IERC20 public stakedToken = IERC20(0x0B72b2Ff0e87ff84EFf98451163B78408486Ee5c);
@@ -70,22 +69,29 @@ contract RandomNumberConsumer is VRFConsumerBase {
         )
     {
         keyHash = 0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4;
-        fee = 0.1 * 10 ** 18; // 0.1 LINK (Varies by network)
+        fee = 0.0001 * 10 ** 18; // 0.0001 LINK
     }
     
     /** 
      * Requests randomness 
      */
-     function appr (uint256 amt2)public{
-         LINK.approve(address(this), fee);
-         stakedToken.approve(address(this), amt2);
-     }
-
     function getRandomNumber(uint256 guess, uint256 amt) public returns (bytes32 requestId) {
         require(guess<95, "Must guess lower than 95");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
-        LINK.transferFrom(msg.sender, address(this), fee);
-        require(amt < stakedToken.balanceOf(address(this)) / 18 , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
+        if(amt <= 50 * 10 ** 18 ){
+            LINK.transferFrom(msg.sender, address(this), fee);
+        }else if(amt <100 * 10 ** 18 && guess < 89)
+        {
+            if(LINK.balanceOf(address(this)) < fee*11 ){
+                LINK.transferFrom(msg.sender, address(this), fee);
+            }
+        }else if(guess <90)
+        {
+            if(LINK.balanceOf(address(this)) < fee*11 ){
+                LINK.transferFrom(msg.sender, address(this), fee);
+            }
+        }
+        require(amt < stakedToken.balanceOf(address(this)) / 20 , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
@@ -96,7 +102,6 @@ contract RandomNumberConsumer is VRFConsumerBase {
     }
 
     function getBlank() public returns (bytes32 requestId) {
-        require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         LINK.transferFrom(msg.sender, address(this), fee);
 
         return requestRandomness(keyHash, fee);
@@ -120,26 +125,26 @@ contract RandomNumberConsumer is VRFConsumerBase {
             ratio = betAmount * 100 / totalSupply;
             if(ratio < 20){
 
-            winnings[betid] = (100 * betAmount)/(odds+8);
-            }else if(ratio < 15){
-
-            winnings[betid] = (100 * betAmount)/(odds+6);
-
-            }else if(ratio < 20){
-
-            winnings[betid] = (100 * betAmount)/(odds+4);
-                
-            }else if(ratio < 30){
-
-            winnings[betid] = (100 * betAmount)/(odds+3);
-                
+            winnings[betid] = (100 * 93 *  betAmount)/(odds * 100);
             }else if(ratio < 40){
 
-            winnings[betid] = (100 * betAmount)/(odds+2);
+            winnings[betid] = (100 * 95 * betAmount)/(odds*100);
+
+            }else if(ratio < 60){
+
+            winnings[betid] = (100 * 98 * betAmount)/(odds * 100);
                 
-            }else if(ratio < 50){
+            }else if(ratio < 100){
+
+            winnings[betid] = (100 * 985 * betAmount)/(odds * 1000);
                 
-            winnings[betid] = (100 * betAmount)/(odds+1);
+            }else if(ratio < 150){
+
+            winnings[betid] = (100 * 990 * betAmount)/(odds * 1000);
+            }else{
+
+            winnings[betid] = (100 * 995 * betAmount)/(odds * 1000);
+                
             }
                 stakedToken.transfer(Guesser, winnings[betid]);
             
@@ -179,12 +184,12 @@ contract RandomNumberConsumer is VRFConsumerBase {
     }
 	//this is a recent ethereum block hash, used to prevent pre-mining future blocks
 
-
-    function perfectWithdraw(uint256 amt, uint256 thres)public {
+    function perfectWithdraw(uint256 thres)public {
         if(betidIN - betid < thres ){
-            withdraw(amt);
+            withdraw(stakedToken.balanceOf(msg.sender));
         }
     }
+
     function withdraw(uint256 amount) public virtual {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
 
@@ -194,7 +199,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
             require(success, "eth transfer failure");
         }
         else {
-            amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3) ;
+            uint256 amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3) ;
             require(stakedToken.transfer(address(0x7d28fa576a4e08922B01e897CE4f5517AD351578), (amt / 50)));
             require(stakedToken.transfer(msg.sender, amt * 49 / 50));
             
