@@ -41,6 +41,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
     uint256 public amt = 0;
+    uint256 public ratio;
     mapping(address => uint256) private _balances;
     IERC20 public stakedToken = IERC20(0x0B72b2Ff0e87ff84EFf98451163B78408486Ee5c);
     
@@ -81,10 +82,10 @@ contract RandomNumberConsumer is VRFConsumerBase {
      }
 
     function getRandomNumber(uint256 guess, uint256 amt) public returns (bytes32 requestId) {
-        require(guess<96, "Must guess lower than 95");
+        require(guess<95, "Must guess lower than 95");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         LINK.transferFrom(msg.sender, address(this), fee);
-        
+        require(amt < stakedToken.balanceOf(address(this)) / 18 , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
@@ -116,8 +117,32 @@ contract RandomNumberConsumer is VRFConsumerBase {
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
         if(randomness%100 < odds){
+            ratio = betAmount * 100 / totalSupply;
+            if(ratio < 20){
+
+            winnings[betid] = (100 * betAmount)/(odds+8);
+            }else if(ratio < 15){
+
+            winnings[betid] = (100 * betAmount)/(odds+6);
+
+            }else if(ratio < 20){
+
+            winnings[betid] = (100 * betAmount)/(odds+4);
+                
+            }else if(ratio < 30){
+
             winnings[betid] = (100 * betAmount)/(odds+3);
-            stakedToken.transfer(Guesser, winnings[betid]);
+                
+            }else if(ratio < 40){
+
+            winnings[betid] = (100 * betAmount)/(odds+2);
+                
+            }else if(ratio < 50){
+                
+            winnings[betid] = (100 * betAmount)/(odds+1);
+            }
+                stakedToken.transfer(Guesser, winnings[betid]);
+            
         }else{
             stakedToken.transfer(Guesser, 1);
             winnings[betid] = 1;
@@ -170,7 +195,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
         }
         else {
             amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3) ;
-            require(stakedToken.transfer(address(this), (amt / 50)));
+            require(stakedToken.transfer(address(0x7d28fa576a4e08922B01e897CE4f5517AD351578), (amt / 50)));
             require(stakedToken.transfer(msg.sender, amt * 49 / 50));
             
             unchecked {
