@@ -41,6 +41,7 @@ contract ForgeGuess is VRFConsumerBase {
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
     uint256 public ratio;
+    uint256 public wagered = 0;
     mapping(address => uint256) private _balances;
     IERC20 public stakedToken = IERC20(0x0B72b2Ff0e87ff84EFf98451163B78408486Ee5c);
     
@@ -98,6 +99,7 @@ contract ForgeGuess is VRFConsumerBase {
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
         unreleased +=  amt;
+        wagered += amt;
         return requestRandomness(keyHash, fee);
     }
 
@@ -122,32 +124,8 @@ contract ForgeGuess is VRFConsumerBase {
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
         if(randomness%100 < odds){
-            ratio = betAmount * 100 / totalSupply;
-            if(ratio < 20){
-
-            winnings[betid] = (100 * 93 *  betAmount)/(odds * 100);
-            }else if(ratio < 40){
-
-            winnings[betid] = (100 * 95 * betAmount)/(odds*100);
-
-            }else if(ratio < 60){
-
-            winnings[betid] = (100 * 98 * betAmount)/(odds * 100);
-                
-            }else if(ratio < 100){
-
-            winnings[betid] = (100 * 985 * betAmount)/(odds * 1000);
-                
-            }else if(ratio < 150){
-
-            winnings[betid] = (100 * 990 * betAmount)/(odds * 1000);
-            }else{
-
-            winnings[betid] = (100 * 995 * betAmount)/(odds * 1000);
-                
-            }
-                stakedToken.transfer(Guesser, winnings[betid]);
-            
+            winnings[betid]=estOUTPUT(betAmount, odds);
+            stakedToken.transfer(Guesser, winnings[betid]);
         }else{
             stakedToken.transfer(Guesser, 1);
             winnings[betid] = 1;
@@ -178,8 +156,39 @@ contract ForgeGuess is VRFConsumerBase {
         emit Staked(forWhom, amount);
     }
 
+
+     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
+        uint256 ratioz = betAmount * 100 / stakedToken.balanceOf(address(this));
+        uint256 estOutput = 0;
+            if(ratioz < 20){
+
+            estOutput = (100 * 93 *  betAmount)/(odds * 100);
+            }else if(ratioz < 30){
+
+            estOutput = (100 * 95 * betAmount)/(odds*100);
+
+            }else if(ratioz < 50){
+
+            estOutput = (100 * 98 * betAmount)/(odds * 100);
+                
+            }else if(ratioz < 80){
+
+            estOutput = (100 * 985 * betAmount)/(odds * 1000);
+                
+            }else if(ratioz < 100){
+
+            estOutput = (100 * 990 * betAmount)/(odds * 1000);
+            }else{
+
+            estOutput = (100 * 995 * betAmount)/(odds * 1000);
+                
+            }
+            return estOutput;
+
+     }
+
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (98 * amountOut * stakedToken.balanceOf(address(this)))/ (totalSupply * 100) - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3);
+        uint256 v = (98 * amountOut * stakedToken.balanceOf(address(this)))/ (totalSupply * 100) - ((2 * unreleased * unreleased )/ stakedToken.balanceOf(address(this)));
         return v;
     }
 	//this is a recent ethereum block hash, used to prevent pre-mining future blocks
@@ -199,8 +208,8 @@ contract ForgeGuess is VRFConsumerBase {
             require(success, "eth transfer failure");
         }
         else {
-            uint256 amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (4 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))*3) ;
-            require(stakedToken.transfer(address(0x7d28fa576a4e08922B01e897CE4f5517AD351578), (amt / 50)));
+            uint256 amt = ( amount * stakedToken.balanceOf(address(this))) / totalSupply - (2 * unreleased * unreleased )/ (stakedToken.balanceOf(address(this))) ;
+            require(stakedToken.transfer(address(this), (amt / 50)));
             require(stakedToken.transfer(msg.sender, amt * 49 / 50));
             
             unchecked {
