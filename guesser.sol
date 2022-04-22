@@ -78,27 +78,27 @@ contract ForgeGuess is VRFConsumerBase {
      * Requests randomness 
      */
     function getRandomNumber(uint256 guess, uint256 amt) public returns (bytes32 requestId) {
+        require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
         require(guess<98, "Must guess lower than 98");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         uint256 lBal = LINK.balanceOf(address(this));
         if(amt < 1 * 10 ** 18){
             LINK.transferFrom(msg.sender, address(this), fee);
         }else if(amt < 50 * 10 ** 18 ){
-            if(betidIN < 1000 && lBal > fee * 9){ 
+            if(betidIN > 1000 || lBal < fee * 9){ 
                 LINK.transferFrom(msg.sender, address(this), fee);
             }
         }else if(guess <= 93)
         {
-            if(lBal > fee*11 ){
+            if(lBal < fee*9 ){
                 LINK.transferFrom(msg.sender, address(this), fee);
             }
         }else
         {
-            if(lBal > fee*11 ){
+            if(lBal < fee*9 ){
                 LINK.transferFrom(msg.sender, address(this), fee);
             }
         }
-        require(amt*25/guess <= (stakedToken.balanceOf(address(this)) - unreleased) / 20 , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
@@ -112,7 +112,8 @@ contract ForgeGuess is VRFConsumerBase {
 
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
-         return ((stakedToken.balanceOf(address(this)) - unreleased) / 20) * guess / 25;
+         uint256 ret = ((stakedToken.balanceOf(address(this)) - unreleased) * guess) / (50 * 20);
+         return ret;
      }
 
 
@@ -170,7 +171,7 @@ contract ForgeGuess is VRFConsumerBase {
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
         uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) / betAmount;
         uint256 estOutput = 0;
-            if(ratioz < 20){
+            if(ratioz < 20){  
 
             estOutput = (100 * 93 *  betAmount)/(odds * 100);
             }else if(ratioz < 50){
@@ -199,14 +200,14 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = 98 * amountOut * ((stakedToken.balanceOf(address(this)) - (unreleased * 4 / 3)) / totalSupply);
+        uint256 v = (98 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 100 / totalSupply);
         return v;
     }
 
     //Prevents you from withdrawing if large bets in play
     function perfectWithdraw(uint256 thres)public {
         if(betidIN - betid < thres ){
-            withdraw(stakedToken.balanceOf(msg.sender));
+            withdraw(balanceOf(msg.sender));
         }
     }
 
@@ -216,7 +217,7 @@ contract ForgeGuess is VRFConsumerBase {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
 
         IERC20 st = stakedToken;
-        uint256 amt = amount * ((stakedToken.balanceOf(address(this)) - (unreleased * 4 / 3)) / totalSupply) ;
+        uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
         require(stakedToken.transfer(msg.sender, amt * 49 / 50));
         unchecked {
