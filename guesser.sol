@@ -4,11 +4,6 @@ pragma solidity ^0.8.7;
 import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 
 /**
- * THIS IS AN EXAMPLE CONTRACT WHICH USES HARDCODED VALUES FOR CLARITY.
- * PLEASE DO NOT USE THIS CODE IN PRODUCTION.
- */
-
-/**
  * Request testnet LINK and ETH here: https://faucets.chain.link/
  * Find information on LINK Token Contracts and get the latest ETH and LINK faucets here: https://docs.chain.link/docs/link-token-contracts/
  */
@@ -34,17 +29,16 @@ contract ForgeGuess is VRFConsumerBase {
     mapping(uint256 => uint256) public betResults;
     mapping(uint256 => uint256) public betAmt;
     mapping(uint256 => uint256) public betOdds;
-    mapping(uint256 => uint256) public score;
-    mapping(uint256 => uint256) public score2;
+    mapping(uint256 => uint256) public randomNumber;
     mapping(uint256 => address) public betee;
     mapping(uint256 => uint256) public winnings;
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
-    uint256 public ratio;
     uint256 public wagered = 0;
+    bool initeds = false;
     mapping(address => uint256) private _balances;
-    IERC20 public stakedToken = IERC20(0x0B72b2Ff0e87ff84EFf98451163B78408486Ee5c);
+    IERC20 public stakedToken = IERC20(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
     
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
@@ -53,6 +47,7 @@ contract ForgeGuess is VRFConsumerBase {
     function balanceOf(address account) public view returns (uint256) {
         return _balances[account];
     }
+    
 
     string constant _transferErrorMessage = "staked token transfer failed";
     
@@ -70,6 +65,7 @@ contract ForgeGuess is VRFConsumerBase {
             0x326C977E6efc84E512bB9C30f76E30c160eD06FB  // LINK Token
         )
     {
+        
         keyHash = 0x6e75b569a01ef56d18cab6a8e71e6600d6ce853834d4a5748b720d06f878b3a4;
         fee = 0.0001 * 10 ** 18; // 0.0001 LINK
     }
@@ -134,7 +130,7 @@ contract ForgeGuess is VRFConsumerBase {
         }
         require(betid < betidIN, "Must have new bets");
         randomResult = randomness;
-        score[betid] = randomness;
+        randomNumber[betid] = randomness;
         betResults[betid] = randomness % 100;
         address Guesser = betee[betid];
         uint256 odds = betOdds[betid];
@@ -158,8 +154,8 @@ contract ForgeGuess is VRFConsumerBase {
         require(msg.value == 0, "non-zero eth");
         require(amount > 0, "Cannot stake 0");
         unchecked { 
-            _balances[forWhom] += amount * totalSupply / (stakedToken.balanceOf(address(this)) - unreleased);
-            totalSupply += amount * totalSupply / (stakedToken.balanceOf(address(this)) - unreleased);
+            _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)) - unreleased);
+            totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)) - unreleased);
         }
         
         require(st.transferFrom(msg.sender, address(this), amount), _transferErrorMessage);
@@ -215,8 +211,6 @@ contract ForgeGuess is VRFConsumerBase {
     //Withdrawl function for house
     function withdraw(uint256 amount) public virtual {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
-
-        IERC20 st = stakedToken;
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
         require(stakedToken.transfer(msg.sender, amt * 49 / 50));
