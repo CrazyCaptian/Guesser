@@ -73,26 +73,31 @@ contract ForgeGuess is VRFConsumerBase {
     /** 
      * Requests randomness 
      */
-    function getRandomNumber(uint256 guess, uint256 amt) public returns (bytes32 requestId) {
-        require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //Plays off 1/11th of the bankroll
+    function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
+        require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
+        require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts
         require(guess<98, "Must guess lower than 98");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         uint256 lBal = LINK.balanceOf(address(this));
+        //Free chainlink for player rolls
+        if(extraLINK > 1){
+        LINK.transferFrom(msg.sender, address(this), (fee * (extraLINK-1)));
+        }
         if(amt < 1 * 10 ** 18){
-            LINK.transferFrom(msg.sender, address(this), fee);
+            LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
         }else if(amt < 50 * 10 ** 18 ){
-            if(betidIN > 100000 || lBal < fee * 9){  //Must seed with 10 link = 100,000 * 0.0001 = 10 LINK
-                LINK.transferFrom(msg.sender, address(this), fee);
+            if(betidIN > 100000 || lBal < fee * 21){  //Must seed with 10 link = 100,000 * 0.0001 = 10 LINK
+                LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
             }
         }else if(guess <= 93)
         {
-            if(lBal < fee*9 ){
-                LINK.transferFrom(msg.sender, address(this), fee);
+            if(lBal < fee*21 ){
+                LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
             }
         }else
         {
-            if(lBal < fee*9 ){
-                LINK.transferFrom(msg.sender, address(this), fee);
+            if(lBal < fee*21 ){
+                LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
             }
         }
         betOdds[betidIN] = guess;
@@ -102,7 +107,7 @@ contract ForgeGuess is VRFConsumerBase {
         betidIN++;
         unreleased +=  amt;
         wagered += amt;
-        return requestRandomness(keyHash, fee);
+        return requestRandomness(keyHash, fee * extraLINK);
     }
 
 
@@ -114,10 +119,10 @@ contract ForgeGuess is VRFConsumerBase {
 
 
     //Incase of Chainlink failure
-    function getBlank() public returns (bytes32 requestId) {
-        LINK.transferFrom(msg.sender, address(this), fee);
+    function getBlank(uint256 extraLINK) public returns (bytes32 requestId) {
+        LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
 
-        return requestRandomness(keyHash, fee);
+        return requestRandomness(keyHash, fee * extraLINK);
     }
 
 
