@@ -81,7 +81,7 @@ contract ForgeGuess is VRFConsumerBase {
         if(amt < 1 * 10 ** 18){
             LINK.transferFrom(msg.sender, address(this), fee);
         }else if(amt < 50 * 10 ** 18 ){
-            if(betidIN > 1000 || lBal < fee * 9){ 
+            if(betidIN > 100000 || lBal < fee * 9){  //Must seed with 10 link = 100,000 * 0.0001 = 10 LINK
                 LINK.transferFrom(msg.sender, address(this), fee);
             }
         }else if(guess <= 93)
