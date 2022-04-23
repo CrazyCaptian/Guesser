@@ -32,6 +32,7 @@ contract ForgeGuess is VRFConsumerBase {
     mapping(uint256 => uint256) public randomNumber;
     mapping(uint256 => address) public betee;
     mapping(uint256 => uint256) public winnings;
+    mapping(address => int) public deposited;
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
@@ -161,6 +162,7 @@ contract ForgeGuess is VRFConsumerBase {
         unchecked { 
             _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)) - unreleased);
             totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)) - unreleased);
+            deposited[forWhom] += amount;
         }
         
         require(st.transferFrom(msg.sender, address(this), amount), _transferErrorMessage);
@@ -204,7 +206,7 @@ contract ForgeGuess is VRFConsumerBase {
         uint256 v = (98 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 100 / totalSupply);
         return v;
     }
-
+    
     //Prevents you from withdrawing if large bets in play
     function perfectWithdraw(uint256 thres)public {
         if(betidIN - betid < thres ){
@@ -222,8 +224,14 @@ contract ForgeGuess is VRFConsumerBase {
         unchecked {
             _balances[msg.sender] -= amount;
             totalSupply = totalSupply - amount;
+            deposited[msg.sender] -= amt;
         }
            
         emit Withdrawn(msg.sender, amount);
+    }    
+    function Profit(address user) public returns(int) {
+        uint256 withdrawable = withEstimator(balanceOf(user));
+        int profit = deposited[msg.sender] - withdrawable;
+        return profit;
     }
 }
