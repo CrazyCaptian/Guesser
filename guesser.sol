@@ -1,3 +1,14 @@
+// Forge Guess - Contract
+//
+// Forge Guess allows users to guess a number 1-97 and hope a random number 1-100 is lower.  
+// Odds and bet maximums are calculated automatically at the contract level. Forge tokens using chainlink VRF.
+// House edge of 0.5% - 7% depending on bet size.
+//
+// Forge Guess gives 100% of all profits to investors of the contract.
+// Invest Forge and become the house and make Forge when users use this contract!
+// 3% Withdrawl fee goes 100% back to investors to promote longeviity!
+
+
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
@@ -245,3 +256,28 @@ contract ForgeGuess is VRFConsumerBase {
         return profit;
     }
 }
+
+/*
+*
+* MIT License
+* ===========
+*
+* Copyright (c) 2022 Forge
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.   
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+*/
