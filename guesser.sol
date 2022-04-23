@@ -32,7 +32,8 @@ contract ForgeGuess is VRFConsumerBase {
     mapping(uint256 => uint256) public randomNumber;
     mapping(uint256 => address) public betee;
     mapping(uint256 => uint256) public winnings;
-    mapping(address => int) public deposited;
+    mapping(address => int) public profitz;
+    int public HouseProfitz = 0;
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
@@ -162,7 +163,7 @@ contract ForgeGuess is VRFConsumerBase {
         unchecked { 
             _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)) - unreleased);
             totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)) - unreleased);
-            deposited[forWhom] += amount;
+            profitz[forWhom] -= int(amount);
         }
         
         require(st.transferFrom(msg.sender, address(this), amount), _transferErrorMessage);
@@ -176,34 +177,38 @@ contract ForgeGuess is VRFConsumerBase {
         uint256 estOutput = 0;
             if(ratioz < 20){  
 
-            estOutput = (100 * 93 *  betAmount)/(odds * 100);
+            estOutput = (100 * 90 *  betAmount)/(odds * 100);
             }else if(ratioz < 50){
 
-            estOutput = (100 * 95 * betAmount)/(odds*100);
+            estOutput = (100 * 93 * betAmount)/(odds*100);
 
             }else if(ratioz < 100){
 
-            estOutput = (100 * 98 * betAmount)/(odds * 100);
+            estOutput = (100 * 95 * betAmount)/(odds * 100);
                 
             }else if(ratioz < 150){
 
-            estOutput = (100 * 985 * betAmount)/(odds * 1000);
+            estOutput = (100 * 97 * betAmount)/(odds * 100);
                 
             }else if(ratioz < 300){
 
-            estOutput = (100 * 990 * betAmount)/(odds * 1000);
-            }else{
+            estOutput = (100 * 98 * betAmount)/(odds * 100);
+            }else if(ratioz < 500){
+
+            estOutput = (100 * 99 * betAmount)/(odds * 100);
+                
+            }else {
 
             estOutput = (100 * 995 * betAmount)/(odds * 1000);
-                
             }
+            
             return estOutput;
 
      }
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (98 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 100 / totalSupply);
+        uint256 v = (985 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 1000 / totalSupply);
         return v;
     }
     
@@ -214,24 +219,28 @@ contract ForgeGuess is VRFConsumerBase {
         }
     }
 
-    //2% fee on withdrawls back to holders
+    //3% fee on withdrawls back to holders
     //Withdrawl function for house
     function withdraw(uint256 amount) public virtual {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
-        require(stakedToken.transfer(msg.sender, amt * 49 / 50));
+        require(stakedToken.transfer(msg.sender, ((amt * 985) / 1000)));
         unchecked {
             _balances[msg.sender] -= amount;
             totalSupply = totalSupply - amount;
-            deposited[msg.sender] -= amt;
+            profitz[msg.sender] += int(amt);
         }
            
         emit Withdrawn(msg.sender, amount);
     }    
+    function HouseProfit() public returns(int){
+
+
+    }
     function Profit(address user) public returns(int) {
         uint256 withdrawable = withEstimator(balanceOf(user));
-        int profit = deposited[msg.sender] - withdrawable;
+        int profit = profitz[msg.sender] + int(withdrawable);
         return profit;
     }
 }
