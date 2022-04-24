@@ -45,6 +45,7 @@ contract ForgeGuess is VRFConsumerBase {
     mapping(uint256 => address) public betee;
     mapping(uint256 => uint256) public winnings;
     mapping(address => int) public profitz;
+    mapping(address => int) public profitzGuess;
 
     uint256 public randomResult;
     uint256 public unreleased=0;
@@ -91,7 +92,7 @@ contract ForgeGuess is VRFConsumerBase {
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
         require(amt < estOUTPUT(amt, guess), "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
-        require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts
+        require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts   
         require(guess<98, "Must guess lower than 98");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         uint256 lBal = LINK.balanceOf(address(this));
@@ -119,6 +120,7 @@ contract ForgeGuess is VRFConsumerBase {
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
+        profitzGuess[msg.sender] -= int(amt);
         blockNumForBetID[betidIN] = block.number;
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
@@ -157,11 +159,14 @@ contract ForgeGuess is VRFConsumerBase {
         address Guesser = betee[betid];
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
+        uint256 esT = estOUTPUT(betAmount, odds);
         if(randomness%100 < odds){
-            winnings[betid]=estOUTPUT(betAmount, odds);
+            winnings[betid]=esT;
+        profitzGuess[Guesser] += int(esT);
             stakedToken.transfer(Guesser, winnings[betid]);
         }else{
             stakedToken.transfer(Guesser, 1);
+            profitzGuess[Guesser] += int(1);
             winnings[betid] = 1;
         }
         unreleased -= betAmount;
