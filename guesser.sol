@@ -38,6 +38,7 @@ contract ForgeGuess is VRFConsumerBase {
     uint256 public betidIN = 0;
     //Guess Storage
     mapping(uint256 => uint256) public betResults;
+    mapping(uint256 => uint256) public blockNumForBetID;
     mapping(uint256 => uint256) public betAmt;
     mapping(uint256 => uint256) public betOdds;
     mapping(uint256 => uint256) public randomNumber;
@@ -88,6 +89,7 @@ contract ForgeGuess is VRFConsumerBase {
      * Requests randomness 
      */
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
+        require(amt < estOUTPUT(amt, guess), "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
         require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts
         require(guess<98, "Must guess lower than 98");
@@ -117,6 +119,7 @@ contract ForgeGuess is VRFConsumerBase {
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
+        blockNumForBetID[betidIN] = block.number;
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
         unreleased +=  amt;
@@ -166,15 +169,26 @@ contract ForgeGuess is VRFConsumerBase {
         betid++;
     }
 
-
+    function dontStakePerc() public view returns (uint256){
+        if(unreleased == 0){
+            return 0;
+        }
+       return ( unreleased * 1000000 / (IERC20(stakedToken).balanceOf(address(this)) - unreleased)  );
+    }
     //Stake and become the house
-    function stakeFor(address forWhom, uint256 amount) public payable virtual {
+    function stakeFor(address forWhom, uint256 amount, uint256 maxUnreleasedPercent) public virtual {
+        if(unreleased != 0){
+           if(dontStakePerc() > maxUnreleasedPercent ){ 
+              //maxUnreleasedPercent =  percent % 10000
+               return;
+          }
+        }
         IERC20 st = stakedToken;
-        require(msg.value == 0, "non-zero eth");
         require(amount > 0, "Cannot stake 0");
+
         unchecked { 
-            _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)) - unreleased);
-            totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)) - unreleased);
+            _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)));
+            totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)));
             profitz[forWhom] -= int(amount);
         }
         
@@ -220,7 +234,7 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (985 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 1000 / totalSupply);
+        uint256 v = (975 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 1000 / totalSupply);
         return v;
     }
     
@@ -237,23 +251,24 @@ contract ForgeGuess is VRFConsumerBase {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
-        require(stakedToken.transfer(msg.sender, ((amt * 985) / 1000)));
+        require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
         unchecked {
             _balances[msg.sender] -= amount;
             totalSupply = totalSupply - amount;
-            profitz[msg.sender] += int(amt);
+            profitz[msg.sender] += int(amt * 975 / 1000);
         }
            
         emit Withdrawn(msg.sender, amount);
     }    
-    function HouseProfit() public returns(int){
 
-
-    }
-    function Profit(address user) public returns(int) {
+    function Profit(address user) public view returns(int) {
         uint256 withdrawable = withEstimator(balanceOf(user));
-        int profit = profitz[msg.sender] + int(withdrawable);
+        int profit = profitz[user] + int(withdrawable);
         return profit;
+    }
+
+    function blockNumber() public view returns(uint) {
+        return block.number;
     }
 }
 
