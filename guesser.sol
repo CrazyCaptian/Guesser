@@ -228,9 +228,13 @@ contract ForgeGuess is VRFConsumerBase {
 
             estOutput = (100 * 99 * betAmount)/(odds * 100);
                 
-            }else {
+            }else if(ratioz < 1000){
 
             estOutput = (100 * 995 * betAmount)/(odds * 1000);
+            }else{
+                
+            estOutput = (100 * 990 * betAmount)/(odds * 1000);
+
             }
             
             return estOutput;
