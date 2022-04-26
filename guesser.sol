@@ -174,20 +174,10 @@ contract ForgeGuess is VRFConsumerBase {
         betid++;
     }
 
-    function dontStakePerc() public view returns (uint256){
-        if(unreleased == 0){
-            return 0;
-        }
-       return ( unreleased * 1000000 / (IERC20(stakedToken).balanceOf(address(this)) - unreleased)  );
-    }
     //Stake and become the house
-    function stakeFor(address forWhom, uint256 amount, uint256 maxUnreleasedPercent) public virtual {
-        if(unreleased != 0){
-           if(dontStakePerc() > maxUnreleasedPercent ){ 
-              //maxUnreleasedPercent =  percent % 10000
-               return;
-          }
-        }
+    function stakeFor(address forWhom, uint256 amount, uint256 maxUnreleased) public virtual {
+        require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
+        
         IERC20 st = stakedToken;
         require(amount > 0, "Cannot stake 0");
 
@@ -231,7 +221,7 @@ contract ForgeGuess is VRFConsumerBase {
             }else if(ratioz < 1000){
 
             estOutput = (100 * 995 * betAmount)/(odds * 1000);
-            
+
             }else{
                 
             estOutput = (100 * 990 * betAmount)/(odds * 1000);
@@ -249,15 +239,15 @@ contract ForgeGuess is VRFConsumerBase {
     }
     
     //Prevents you from withdrawing if large bets in play
-    function perfectWithdraw(uint256 thres)public {
-        if(betidIN - betid < thres ){
-            withdraw(balanceOf(msg.sender));
-        }
+    function perfectWithdraw(uint256 maxUnreleased) public {
+        withdraw(balanceOf(msg.sender), maxUnreleased);
     }
 
     //3% fee on withdrawls back to holders
     //Withdrawl function for house
-    function withdraw(uint256 amount) public virtual {
+    //maxPercentinLimbox10000.   10% = 10 * 10000 = 100000
+    function withdraw(uint256 amount, uint256 maxUnreleased) public virtual {
+        require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
