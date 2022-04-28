@@ -60,7 +60,7 @@ contract ForgeGuess is VRFConsumerBase {
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event GuessNote(uint256 UsersGuess, uint256 amount, address indexed user, uint256 betID);
-    event ShowAnswer(uint256 UsersGuess, uint256 Result, uint256 amountWagered, uint256 betID, address indexed AddressOfGuesser, uint256 AmountWon);
+    event ShowAnswer(uint256 UsersGuess, uint256 Result, uint256 amountWagered, uint256 betID, address indexed AddressOfGuesser, uint256 AmountWon, uint256 chainlinkRandom, uint256 blockHash, uint256 blocktime);
     function balanceOf(address account) public view returns (uint256) {
         return _balances[account];
     }
@@ -90,11 +90,14 @@ contract ForgeGuess is VRFConsumerBase {
      * Requests randomness 
      */
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
-        require(amt < estOUTPUT(amt, guess), "You will loose money everytime at these settings");
+        
+        uint256 esT = estOUTPUT(amt, guess);
+        require(amt < esT, "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
         require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts   
         require(guess<98, "Must guess lower than 98");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
+        
         uint256 lBal = LINK.balanceOf(address(this));
         //Free chainlink for player rolls
         if(extraLINK > 1){
@@ -120,8 +123,10 @@ contract ForgeGuess is VRFConsumerBase {
         betOdds[betidIN] = guess;
         betAmt[betidIN] = amt;
         betee[betidIN] = msg.sender;
+        winnings[betidIN] = esT;
         profitzGuess[msg.sender] -= int(amt);
         blockNumForBetID[betidIN] = block.number;
+        winnings[betid]=esT;
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
         unreleased +=  amt;
@@ -152,25 +157,27 @@ contract ForgeGuess is VRFConsumerBase {
         if(betid >= betidIN){
             return;
         }
+        
         require(betid < betidIN, "Must have new bets");
-        randomResult = randomness;
-        randomNumber[betid] = randomness;
-        betResults[betid] = randomness % 100;
+        
+        uint256 extraS = uint256(blockhash(block.number - 1));
+        uint256 randomMore = extraS + randomness + block.timestamp;
+        randomNumber[betid] = randomMore;
+        betResults[betid] = randomMore % 100;
         address Guesser = betee[betid];
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
-        uint256 esT = estOUTPUT(betAmount, odds);
-        if(randomness%100 < odds){
-            winnings[betid]=esT;
-        profitzGuess[Guesser] += int(esT);
-            stakedToken.transfer(Guesser, winnings[betid]);
+        uint256 esT = winnings[betid];
+        if(randomMore%100 < odds){
+            profitzGuess[Guesser] += int(esT);
+            stakedToken.transfer(Guesser, esT);
         }else{
             stakedToken.transfer(Guesser, 1);
             profitzGuess[Guesser] += int(1);
             winnings[betid] = 1;
         }
         unreleased -= betAmount;
-        emit ShowAnswer(odds, randomness%100, betAmount,  betid, Guesser, winnings[betid]);
+        emit ShowAnswer(odds, randomMore%100, betAmount,  betid, Guesser, winnings[betid], randomness, extraS,  block.timestamp);
         betid++;
     }
 
