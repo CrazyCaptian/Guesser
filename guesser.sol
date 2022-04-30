@@ -160,15 +160,13 @@ contract ForgeGuess is VRFConsumerBase {
         
         require(betid < betidIN, "Must have new bets");
         
-        uint256 extraS = uint256(blockhash(block.number - 1));
-        uint256 randomMore = extraS + randomness + block.timestamp;
-        randomNumber[betid] = randomMore;
-        betResults[betid] = randomMore % 100;
+        randomNumber[betid] = randomness;
+        betResults[betid] = randomness % 100;
         address Guesser = betee[betid];
         uint256 odds = betOdds[betid];
         uint256 betAmount = betAmt[betid];
         uint256 esT = winnings[betid];
-        if(randomMore%100 < odds){
+        if(randomness%100 < odds){
             profitzGuess[Guesser] += int(esT);
             stakedToken.transfer(Guesser, esT);
         }else{
@@ -177,7 +175,7 @@ contract ForgeGuess is VRFConsumerBase {
             winnings[betid] = 1;
         }
         unreleased -= betAmount;
-        emit ShowAnswer(odds, randomMore%100, betAmount,  betid, Guesser, winnings[betid], randomness, extraS,  block.timestamp);
+        emit ShowAnswer(odds, randomMore%100, betAmount,  betid, Guesser, winnings[betid], randomness);
         betid++;
     }
 
