@@ -60,7 +60,7 @@ contract ForgeGuess is VRFConsumerBase {
     event Staked(address indexed user, uint256 amount);
     event Withdrawn(address indexed user, uint256 amount);
     event GuessNote(uint256 UsersGuess, uint256 amount, address indexed user, uint256 betID);
-    event ShowAnswer(uint256 UsersGuess, uint256 Result, uint256 amountWagered, uint256 betID, address indexed AddressOfGuesser, uint256 AmountWon, uint256 chainlinkRandom, uint256 blockHash, uint256 blocktime);
+    event ShowAnswer(uint256 UsersGuess, uint256 Result, uint256 amountWagered, uint256 betID, address indexed AddressOfGuesser, uint256 AmountWon, uint256 chainlinkRandom);
     function balanceOf(address account) public view returns (uint256) {
         return _balances[account];
     }
