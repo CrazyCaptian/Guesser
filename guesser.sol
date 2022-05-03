@@ -6,7 +6,7 @@
 //
 // Forge Guess gives 100% of all profits to investors of the contract.
 // Invest Forge and become the house and make Forge when users use this contract!
-// 2.5% Withdrawl fee goes 100% back to investors to promote longeviity!
+// 3% Withdrawl fee goes 100% back to investors to promote longeviity!
 
 
 // SPDX-License-Identifier: MIT
@@ -197,16 +197,46 @@ contract ForgeGuess is VRFConsumerBase {
         emit Staked(forWhom, amount);
     }
 
-    //Output Amount of payout based on odds and bet and balance of house
+    //Output Amount of payout based on odds and bet
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
-        uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds) * 10;
-        
-        y=7641.42 * x ** 00359863/ (x **(100000000)) - 6825.66
-        
-        7641.42 ** 
-        uint256 fee = (995 - (1000 * 10) / (ratio * 5 ) / 10
-        uint256 estOutput = (100 * fee *  betAmount)/(odds * 100 * 1000);
-        return estOutput;
+        uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
+        uint256 estOutput = 0;
+            if(ratioz < 5){  
+                
+            estOutput = (100 * 50 *  betAmount)/(odds * 100);
+            
+            }else if(ratioz < 20){  
+
+            estOutput = (100 * 90 *  betAmount)/(odds * 100);
+            
+            }else if(ratioz < 30){
+
+            estOutput = (100 * 93 * betAmount)/(odds*100);
+
+            }else if(ratioz < 50){
+
+            estOutput = (100 * 95 * betAmount)/(odds * 100);
+                
+            }else if(ratioz < 100){
+
+            estOutput = (100 * 97 * betAmount)/(odds * 100);
+                
+            }else if(ratioz < 200){
+
+            estOutput = (100 * 98 * betAmount)/(odds * 100);
+            
+            }else if(ratioz < 400){
+
+            estOutput = (100 * 99 * betAmount)/(odds * 100);
+
+            }else{
+                
+            estOutput = (100 * 995 * betAmount)/(odds * 1000);
+
+            }
+            
+            return estOutput;
+
      }
 
     //Withdrawl Estimator
@@ -220,7 +250,7 @@ contract ForgeGuess is VRFConsumerBase {
         withdraw(balanceOf(msg.sender), maxUnreleased);
     }
 
-    //2.5% fee on withdrawls back to holders
+    //3% fee on withdrawls back to holders
     //Withdrawl function for house
     //maxPercentinLimbox10000.   10% = 10 * 10000 = 100000
     function withdraw(uint256 amount, uint256 maxUnreleased) public virtual {
