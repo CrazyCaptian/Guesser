@@ -241,22 +241,22 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (975 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / 1000 / totalSupply);
+        uint256 v = (975 * amountOut * (stakedToken.balanceOf(address(this)) - (unreleased ) / 1000 / totalSupply);
         return v;
     }
     
     //Prevents you from withdrawing if large bets in play
-    function perfectWithdraw(uint256 maxUnreleased) public {
-        withdraw(balanceOf(msg.sender), maxUnreleased);
+    function perfectWithdraw() public {
+        withdraw(balanceOf(msg.sender));
     }
 
     //3% fee on withdrawls back to holders
     //Withdrawl function for house
     //maxPercentinLimbox10000.   10% = 10 * 10000 = 100000
-    function withdraw(uint256 amount, uint256 maxUnreleased) public virtual {
+    function withdraw(uint256 amount) public virtual {
         require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
-        uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased * 5 / 3)) / totalSupply ;
+        uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased)) / totalSupply ;
         require(stakedToken.transfer(address(this), (amt / 50)));
         require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
         unchecked {
