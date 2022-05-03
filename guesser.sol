@@ -199,37 +199,33 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Output Amount of payout based on odds and bet
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
-        uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) / betAmount;
+        uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) * 100 / (betAmount * odds);
         uint256 estOutput = 0;
             if(ratioz < 20){  
 
-            estOutput = (100 * 90 *  betAmount)/(odds * 100);
+            estOutput = (100 * 93 *  betAmount)/(odds * 100);
             }else if(ratioz < 50){
 
-            estOutput = (100 * 93 * betAmount)/(odds*100);
+            estOutput = (100 * 95 * betAmount)/(odds*100);
 
             }else if(ratioz < 100){
 
-            estOutput = (100 * 95 * betAmount)/(odds * 100);
+            estOutput = (100 * 97 * betAmount)/(odds * 100);
                 
             }else if(ratioz < 150){
 
-            estOutput = (100 * 97 * betAmount)/(odds * 100);
-                
-            }else if(ratioz < 300){
-
             estOutput = (100 * 98 * betAmount)/(odds * 100);
+                
             }else if(ratioz < 500){
 
             estOutput = (100 * 99 * betAmount)/(odds * 100);
-                
             }else if(ratioz < 1000){
 
             estOutput = (100 * 995 * betAmount)/(odds * 1000);
 
             }else{
                 
-            estOutput = (100 * 990 * betAmount)/(odds * 1000);
+            estOutput = (100 * 99 * betAmount)/(odds * 100);
 
             }
             
