@@ -4,9 +4,9 @@
 // Odds and bet maximums are calculated automatically at the contract level. Forge tokens using chainlink VRF.
 // House edge of 0.5% - 7% depending on bet size.
 //
-// Forge Guess gives 100% of all profits to investors of the contract.
+// Forge Guess gives 100% of all profits to investors of the contract. 
 // Invest Forge and become the house and make Forge when users use this contract!
-// 3% Withdrawl fee goes 100% back to investors to promote longeviity!
+// 2.5% Withdrawl fee goes 100% back to investors to promote longeviity!
 
 
 // SPDX-License-Identifier: MIT
