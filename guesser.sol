@@ -90,7 +90,7 @@ contract ForgeGuess is VRFConsumerBase {
      * Requests randomness 
      */
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
-        
+        require(amt > 0, "Must not bet 0");
         uint256 esT = estOUTPUT(amt, guess);
         require(amt < esT, "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
@@ -201,25 +201,25 @@ contract ForgeGuess is VRFConsumerBase {
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
         uint256 ratioz = (stakedToken.balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
         uint256 estOutput = 0;
-            if(ratioz < 5){  
+            if(ratioz < 15){  
                 
             estOutput = (100 * 50 *  betAmount)/(odds * 100);
             
             }else if(ratioz < 20){  
 
-            estOutput = (100 * 90 *  betAmount)/(odds * 100);
+            estOutput = (100 * 85 *  betAmount)/(odds * 100);
             
             }else if(ratioz < 30){
 
-            estOutput = (100 * 93 * betAmount)/(odds*100);
+            estOutput = (100 * 90 * betAmount)/(odds*100);
 
             }else if(ratioz < 50){
 
-            estOutput = (100 * 95 * betAmount)/(odds * 100);
+            estOutput = (100 * 93 * betAmount)/(odds * 100);
                 
             }else if(ratioz < 100){
 
-            estOutput = (100 * 97 * betAmount)/(odds * 100);
+            estOutput = (100 * 96 * betAmount)/(odds * 100);
                 
             }else if(ratioz < 200){
 
