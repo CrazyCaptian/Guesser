@@ -186,8 +186,8 @@ contract ForgeGuess is VRFConsumerBase {
         require(amount > 0, "Cannot stake 0");
 
         unchecked { 
-            _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this)));
-            totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this)));
+            _balances[forWhom] += (amount * totalSupply) / (stakedToken.balanceOf(address(this) - unreleased));
+            totalSupply += (amount * totalSupply ) / (stakedToken.balanceOf(address(this) - unreleased));
             profitz[forWhom] -= int(amount);
         }
         
@@ -251,19 +251,18 @@ contract ForgeGuess is VRFConsumerBase {
 
     //3% fee on withdrawls back to holders
     //Withdrawl function for house
-    //maxPercentinLimbox10000.   10% = 10 * 10000 = 100000
     function withdraw(uint256 amount) public virtual {
-        require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased)) / totalSupply ;
-        require(stakedToken.transfer(address(this), (amt * 25 / 1000)));
-        require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
         unchecked {
             _balances[msg.sender] -= amount;
             totalSupply = totalSupply - amount;
             profitz[msg.sender] += int(amt * 975 / 1000);
         }
-           
+        
+        require(stakedToken.transfer(address(this), (amt * 25 / 1000)));
+        require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
+        
         emit Withdrawn(msg.sender, amount);
     }    
 
