@@ -137,7 +137,8 @@ contract ForgeGuess is VRFConsumerBase {
 
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
-         uint256 ret = ((stakedToken.balanceOf(address(this)) - unreleased) * guess) / (50 * 20);
+         //AT 50% chance u get 1/23 of bankroll to bet
+         uint256 ret = ((stakedToken.balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
          return ret;
      }
 
@@ -181,8 +182,6 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Stake and become the house
     function stakeFor(address forWhom, uint256 amount, uint256 maxUnreleased) public virtual {
-        require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
-        
         IERC20 st = stakedToken;
         require(amount > 0, "Cannot stake 0");
 
