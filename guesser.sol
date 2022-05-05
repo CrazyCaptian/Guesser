@@ -89,9 +89,8 @@ contract ForgeGuess is VRFConsumerBase {
      * Requests randomness 
      */
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
-        require(amt > 0, "Must not bet 0");
         uint256 esT = estOUTPUT(amt, guess);
-        require(amt < esT, "You will loose money everytime at these settings");
+        require(amt < esT && amt > 0, "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
         require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts   
         require(guess<99 && guess > 0, "Must guess between 1-98");
