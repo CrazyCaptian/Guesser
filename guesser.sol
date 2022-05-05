@@ -50,7 +50,6 @@ contract ForgeGuess is VRFConsumerBase {
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
-    uint256 public wagered = 0;
 
     bool initeds = false;
 
@@ -130,7 +129,6 @@ contract ForgeGuess is VRFConsumerBase {
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
         unreleased +=  amt;
-        wagered += amt;
         return requestRandomness(keyHash, fee * extraLINK);
     }
 
