@@ -257,7 +257,7 @@ contract ForgeGuess is VRFConsumerBase {
         require(unreleased < maxUnreleased, "Too many bets active, please re-submit when bets are settled");
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (stakedToken.balanceOf(address(this)) - (unreleased)) / totalSupply ;
-        require(stakedToken.transfer(address(this), (amt / 50)));
+        require(stakedToken.transfer(address(this), (amt * 25 / 1000)));
         require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
         unchecked {
             _balances[msg.sender] -= amount;
