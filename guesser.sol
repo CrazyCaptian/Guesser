@@ -246,7 +246,7 @@ contract ForgeGuess is VRFConsumerBase {
         withdraw(balanceOf(msg.sender));
     }
 
-    //3% fee on withdrawls back to holders
+    //2.5% fee on withdrawls back to holders
     //Withdrawl function for house
     function withdraw(uint256 amount) public virtual {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
