@@ -181,7 +181,7 @@ contract ForgeGuess is VRFConsumerBase {
     }
 
     //Stake and become the house
-    function stakeFor(address forWhom, uint256 amount, uint256 maxUnreleased) public virtual {
+    function stakeFor(address forWhom, uint256 amount) public virtual {
         IERC20 st = stakedToken;
         require(amount > 0, "Cannot stake 0");
 
