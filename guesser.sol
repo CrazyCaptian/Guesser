@@ -92,7 +92,7 @@ contract ForgeGuess is VRFConsumerBase {
         require(amt < esT && amt > 0, "You will loose money everytime at these settings");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
         require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts   
-        require(guess<99 && guess > 0, "Must guess between 1-98");
+        require(guess<98 && guess > 0, "Must guess between 1-98");
         require(stakedToken.transferFrom(msg.sender, address(this), amt), "Transfer must work");
         
         uint256 lBal = LINK.balanceOf(address(this));
