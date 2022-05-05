@@ -34,9 +34,9 @@ contract ForgeGuess is VRFConsumerBase {
     
     bytes32 internal keyHash;
     uint256 internal fee;
+    //Guess Storage
     uint256 public betid = 0;
     uint256 public betidIN = 0;
-    //Guess Storage
     mapping(uint256 => uint256) public betResults;
     mapping(uint256 => uint256) public blockNumForBetID;
     mapping(uint256 => uint256) public betAmt;
@@ -50,10 +50,9 @@ contract ForgeGuess is VRFConsumerBase {
     uint256 public randomResult;
     uint256 public unreleased=0;
     uint256 public totalSupply = 1;
-
-    bool initeds = false;
-
+    
     mapping(address => uint256) private _balances;
+    
     IERC20 public stakedToken = IERC20(0xbF4493415fD1E79DcDa8cD0cAd7E5Ed65DCe7074);
     
     event Staked(address indexed user, uint256 amount);
