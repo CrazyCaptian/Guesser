@@ -89,7 +89,8 @@ contract ForgeGuess is VRFConsumerBase {
      */
     function getRandomNumber(uint256 guess, uint256 amt, uint256 extraLINK) public returns (bytes32 requestId) {
         uint256 esT = estOUTPUT(amt, guess);
-        require(amt < esT && amt > 0, "You will loose money everytime at these settings");
+        require(amt < esT, "You will loose money everytime at these settings");
+        require(amt >= 10**18, "Min bet 1 Forge");
         require(extraLINK >= 1, "Must send at least the minimum 0.0001"); //Allows increase in fees to be handled
         require(MaxINForGuess(guess) >= amt , "Bankroll too low for this bet, Please lower bet"); //MaxBet Amounts   
         require(guess<98 && guess > 0, "Must guess between 1-98");
@@ -100,7 +101,7 @@ contract ForgeGuess is VRFConsumerBase {
         if(extraLINK > 1){
         LINK.transferFrom(msg.sender, address(this), (fee * (extraLINK-1)));
         }
-        if(amt < 1 * 10 ** 18){
+        if(amt < (10 * 10 ** 18)){
             LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
         }else if(amt < 50 * 10 ** 18 ){
             if(betidIN > 100000 || lBal < fee * 21){  //Must seed with 10 link = 100,000 * 0.0001 = 10 LINK
@@ -224,9 +225,13 @@ contract ForgeGuess is VRFConsumerBase {
 
             estOutput = (100 * 99 * betAmount)/(odds * 100);
 
-            }else{
+            }else if (ratioz < 1000{
                 
             estOutput = (100 * 995 * betAmount)/(odds * 1000);
+
+            } else{
+                
+            estOutput = (100 * 985 * betAmount)/(odds * 1000);
 
             }
             
