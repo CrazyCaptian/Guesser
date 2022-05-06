@@ -131,11 +131,17 @@ contract ForgeGuess is VRFConsumerBase {
         return requestRandomness(keyHash, fee * extraLINK);
     }
 
+    function lastBlockFilled() public view returns (uint256){
+        if(betid == betidIN){
+            return block.number;
+        }
+        return blockNumForBetID[betid];
+    }
 
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
          //AT 50% chance u get 1/23 of bankroll to bet
-         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
+         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 30);
          return ret;
      }
 
@@ -197,6 +203,9 @@ contract ForgeGuess is VRFConsumerBase {
         uint x = 0;
     
         for(x =0; x<98; x++){
+            if(MaxINForGuess(99-x) < amt){
+                amt = MaxINForGuess(99-x);
+            }
             if(estOUTPUT(amt, 99 - x) > amt){
                 break;
             }
@@ -208,15 +217,7 @@ contract ForgeGuess is VRFConsumerBase {
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
         uint256 ratioz = (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
         uint256 estOutput = 0;
-            if(ratioz < 15){  
-                
-            estOutput = (100 * 50 *  betAmount)/(odds * 100);
-            
-            }else if(ratioz < 20){  
-
-            estOutput = (100 * 85 *  betAmount)/(odds * 100);
-            
-            }else if(ratioz < 30){
+            if(ratioz < 30){
 
             estOutput = (100 * 90 * betAmount)/(odds*100);
 
