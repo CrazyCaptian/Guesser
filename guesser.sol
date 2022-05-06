@@ -193,6 +193,17 @@ contract ForgeGuess is VRFConsumerBase {
         emit Staked(forWhom, amount);
     }
 
+    function maxGuessPerInput(uint guess, uint amt) public view returns(uint){
+        uint x = 0;
+    
+        for(x =0; x<98; x++){
+            if(estOUTPUT(amt, 99 - x) > amt){
+                break;
+            }
+        }
+        return 99 - x;
+    }
+
     //Output Amount of payout based on odds and bet
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
         uint256 ratioz = (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
@@ -239,7 +250,7 @@ contract ForgeGuess is VRFConsumerBase {
 
             }else{
                 
-            estOutput = (100 * 95 * betAmount)/(odds * 1000);
+            estOutput = (100 * 950 * betAmount)/(odds * 1000);
 
             }
             
