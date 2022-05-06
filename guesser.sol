@@ -141,7 +141,7 @@ contract ForgeGuess is VRFConsumerBase {
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
          //AT 50% chance u get 1/23 of bankroll to bet
-         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 30);
+         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
          return ret;
      }
 
