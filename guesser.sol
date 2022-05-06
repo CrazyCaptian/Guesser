@@ -135,7 +135,7 @@ contract ForgeGuess is VRFConsumerBase {
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
          //AT 50% chance u get 1/23 of bankroll to bet
-         uint256 ret = (((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
+         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
          return ret;
      }
 
@@ -173,7 +173,7 @@ contract ForgeGuess is VRFConsumerBase {
             winnings[betid] = 1;
         }
         unreleased -= betAmount;
-        emit ShowAnswer(odds, randomMore%100, betAmount,  betid, Guesser, winnings[betid], randomness);
+        emit ShowAnswer(odds, randomness%100, betAmount,  betid, Guesser, winnings[betid], randomness);
         betid++;
     }
 
@@ -183,8 +183,8 @@ contract ForgeGuess is VRFConsumerBase {
         require(amount > 0, "Cannot stake 0");
 
         unchecked { 
-            _balances[forWhom] += (amount * totalSupply) / ((IERC20(address(stakedToken)).balanceOf(address(this) - unreleased));
-            totalSupply += (amount * totalSupply ) / ((IERC20(address(stakedToken)).balanceOf(address(this) - unreleased));
+            _balances[forWhom] += (amount * totalSupply) / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
+            totalSupply += (amount * totalSupply ) / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
             profitz[forWhom] -= int(amount);
         }
         
@@ -195,7 +195,7 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Output Amount of payout based on odds and bet
     function estOUTPUT(uint256 betAmount, uint256 odds) public view returns (uint256){
-        uint256 ratioz = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
+        uint256 ratioz = (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * 50 / (betAmount * odds);
         uint256 estOutput = 0;
             if(ratioz < 15){  
                 
@@ -249,7 +249,7 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (975 * amountOut * ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased ) / 1000 / totalSupply);
+        uint256 v = (975 * amountOut * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased ) / 1000 / totalSupply);
         return v;
     }
     
@@ -262,7 +262,7 @@ contract ForgeGuess is VRFConsumerBase {
     //Withdrawl function for house
     function withdraw(uint256 amount) public virtual {
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
-        uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased)) / totalSupply ;
+        uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) / totalSupply ;
         unchecked {
             _balances[msg.sender] -= amount;
             totalSupply = totalSupply - amount;
