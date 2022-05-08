@@ -202,8 +202,8 @@ contract ForgeGuess is VRFConsumerBase {
     function maxGuessPerInput(uint guess, uint amt) public view returns(uint){
         uint x = 0;
     
-        for(x =0; x<98; x++){
-            if(MaxINForGuess(99-x) < amt){
+        for(x =0; x<90; x++){
+            if(MaxINForGuess(98-x) < amt){
                 amt = MaxINForGuess(99-x);
             }
             if(estOUTPUT(amt, 99 - x) > amt){
