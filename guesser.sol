@@ -48,7 +48,7 @@ contract ForgeGuess is VRFConsumerBase {
     mapping(address => int) public profitzGuess;
 
     uint256 public randomResult;
-    uint256 public unreleased=0;
+    uint256 public unreleased = 0;
     uint256 public totalSupply = 1;
     
     mapping(address => uint256) private _balances;
@@ -59,6 +59,9 @@ contract ForgeGuess is VRFConsumerBase {
     event Withdrawn(address indexed user, uint256 amount);
     event GuessNote(uint256 UsersGuess, uint256 amount, address indexed user, uint256 betID);
     event ShowAnswer(uint256 UsersGuess, uint256 Result, uint256 amountWagered, uint256 betID, address indexed AddressOfGuesser, uint256 AmountWon, uint256 chainlinkRandom);
+    
+    
+    
     function balanceOf(address account) public view returns (uint256) {
         return _balances[account];
     }
@@ -141,7 +144,7 @@ contract ForgeGuess is VRFConsumerBase {
     // Max AMT for a certien guess
      function MaxINForGuess(uint256 guess) public view returns (uint256){
          //AT 50% chance u get 1/23 of bankroll to bet
-         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 23);
+         uint256 ret = ((IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * guess) / (50 * 21);
          return ret;
      }
 
