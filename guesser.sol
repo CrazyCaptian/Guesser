@@ -127,7 +127,6 @@ contract ForgeGuess is VRFConsumerBase {
         winnings[betidIN] = esT;
         profitzGuess[msg.sender] -= int(amt);
         blockNumForBetID[betidIN] = block.number;
-        winnings[betid]=esT;
         emit GuessNote(guess, amt, msg.sender, betidIN);
         betidIN++;
         unreleased +=  amt;
