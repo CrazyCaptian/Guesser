@@ -148,14 +148,19 @@ contract ForgeGuess is VRFConsumerBase {
          return ret;
      }
 
-
+ function penalty () public returns (uint num){
+ uint tot = 0;
+  for(uint x = betid; x<betidIN; x++){
+     tot += winnings[x];
+   }
+   return tot;
+ }
     //Incase of Chainlink failure
     function getBlank(uint256 extraLINK) public returns (bytes32 requestId) {
         LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
 
         return requestRandomness(keyHash, fee * extraLINK);
     }
-
 
     /**
      * Callback function used by VRF Coordinator
@@ -261,19 +266,29 @@ contract ForgeGuess is VRFConsumerBase {
     }
     
     //Prevents you from withdrawing if large bets in play
-    function perfectWithdraw() public {
-        withdraw(balanceOf(msg.sender));
+    function perfectWithdraw(uint maxLoss) public {
+    
+        uint maxPain = penalty();
+        if(maxPain < maxLoss){
+         withdraw(balanceOf(msg.sender));
+       }
+        
     }
 
     //2.5% fee on withdrawls back to holders
     //Withdrawl function for house
     function withdraw(uint256 amount) public virtual {
+    
+        
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
         uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) / totalSupply ;
+        
+        uint maxPain = penalty();
+        uint tot = amt - maxPain / IERC20(address(stakedToken)).balanceOf(address(this)) ;
         unchecked {
-            _balances[msg.sender] -= amount;
-            totalSupply = totalSupply - amount;
-            profitz[msg.sender] += int(amt * 975 / 1000);
+            _balances[msg.sender] -= tot;
+            totalSupply = totalSupply - tot;
+            profitz[msg.sender] += int(tot * 975 / 1000);
         }
         
         require(stakedToken.transfer(address(this), (amt * 25 / 1000)));
