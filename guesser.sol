@@ -147,7 +147,7 @@ contract ForgeGuess is VRFConsumerBase {
          return ret;
      }
 
- function penalty () public returns (uint num){
+ function penalty () public view returns (uint num){
  uint tot = 0;
   for(uint x = betid; x<betidIN; x++){
      tot += winnings[x];
@@ -275,6 +275,16 @@ contract ForgeGuess is VRFConsumerBase {
         
     }
 
+    function uOut(uint amount)public view returns (uint tot){
+        
+        uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this))) / totalSupply ;
+        
+        uint maxPain = penalty() / ( IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
+        
+        uint tot = amt -  amt / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * maxPain;
+
+    return tot;
+    }
     //2.5% fee on withdrawls back to holders
     //Withdrawl function for house
     function withdraw(uint256 amount, uint256 maxLoss) public virtual {
@@ -283,18 +293,17 @@ contract ForgeGuess is VRFConsumerBase {
           }
         
         require(amount <= _balances[msg.sender], "withdraw: balance is lower");
-        uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) / totalSupply ;
         
-        uint maxPain = penalty();
-        uint tot = amt - maxPain / IERC20(address(stakedToken)).balanceOf(address(this)) ;
+        uint OutEst = uOut(amount);
+
         unchecked {
-            _balances[msg.sender] -= tot;
-            totalSupply = totalSupply - tot;
-            profitz[msg.sender] += int(tot * 975 / 1000);
+            _balances[msg.sender] -= OutEst;
+            totalSupply = totalSupply - OutEst;
+            profitz[msg.sender] += int(OutEst * 975 / 1000);
         }
         
-        require(stakedToken.transfer(address(this), (amt * 25 / 1000)));
-        require(stakedToken.transfer(msg.sender, ((amt * 975) / 1000)));
+        require(stakedToken.transfer(address(this), (OutEst * 25 / 1000)));
+        require(stakedToken.transfer(msg.sender, ((OutEst * 975) / 1000)));
         
         emit Withdrawn(msg.sender, amount);
     }    
