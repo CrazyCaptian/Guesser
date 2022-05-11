@@ -261,7 +261,7 @@ contract ForgeGuess is VRFConsumerBase {
 
     //Withdrawl Estimator
     function withEstimator(uint256 amountOut) public view returns (uint256) {
-        uint256 v = (975 * amountOut * (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased ) / 1000 / totalSupply);
+        uint256 v = (975 * uOut(amountOut) / 1000);
         return v;
     }
     
