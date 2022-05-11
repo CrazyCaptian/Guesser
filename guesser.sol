@@ -196,8 +196,9 @@ contract ForgeGuess is VRFConsumerBase {
         require(amount > 0, "Cannot stake 0");
 
         unchecked { 
-            _balances[forWhom] += (amount * totalSupply) / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
-            totalSupply += (amount * totalSupply ) / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
+            uint toAdd = (amount * totalSupply) / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
+            _balances[forWhom] += toAdd;
+            totalSupply += toAdd;
             profitz[forWhom] -= int(amount);
         }
         
