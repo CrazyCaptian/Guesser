@@ -1,8 +1,8 @@
 // Forge Guess - Contract
 //
-// Forge Guess allows users to guess a number 1-97 and hope a random number 1-100 is lower.  
+// Forge Guess allows users to guess a number 1-97 and hope a random number 0-99 is lower.  
 // Odds and bet maximums are calculated automatically at the contract level. Forge tokens using chainlink VRF.
-// House edge of 0.5% - 7% depending on bet size.
+// House edge of 0.5% - 10% depending on bet size.
 //
 // Forge Guess gives 100% of all profits to investors of the contract. 
 // Invest Forge and become the house and make Forge when users use this contract!
@@ -279,15 +279,15 @@ function penalty () public view returns (uint num){
         
     }
 
-    function uOut(uint amount)public view returns (uint tot){
+    function uOut(uint amount)public view returns (uint256 tot){
     
-        var stakeMinusUnreleased = (IERC20(address(stakedToken)).balanceOf(address(this) - unreleased);
+        uint256 stakeMinusUnreleased = (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
         
         uint256 amt = amount * stakeMinusUnreleased / totalSupply ;
         
-        uint maxPain = penalty() / stakeMinusUnreleased;
+        uint256 maxPain = penalty() / stakeMinusUnreleased;
         
-        uint tot = amt -  amt / stakeMinusUnreleased * maxPain;
+        uint256 tot = amt -  amt / stakeMinusUnreleased * maxPain;
 
     return tot;
     }
