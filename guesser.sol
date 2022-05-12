@@ -147,13 +147,16 @@ contract ForgeGuess is VRFConsumerBase {
          return ret;
      }
 
- function penalty () public view returns (uint num){
- uint tot = 0;
-  for(uint x = betid; x<betidIN; x++){
-     tot += winnings[x];
-   }
-   return tot;
+function penalty () public view returns (uint num){
+
+      uint tot = 0;
+      for(uint x = betid; x<betidIN; x++){
+          tot += winnings[x];
+      }
+      
+      return tot;
  }
+ 
     //Incase of Chainlink failure
     function getBlank(uint256 extraLINK) public returns (bytes32 requestId) {
         LINK.transferFrom(msg.sender, address(this), fee * extraLINK);
@@ -277,15 +280,19 @@ contract ForgeGuess is VRFConsumerBase {
     }
 
     function uOut(uint amount)public view returns (uint tot){
+    
+        var stakeMinusUnreleased = (IERC20(address(stakedToken)).balanceOf(address(this) - unreleased);
         
-        uint256 amt = amount * (IERC20(address(stakedToken)).balanceOf(address(this))) / totalSupply ;
+        uint256 amt = amount * stakeMinusUnreleased / totalSupply ;
         
-        uint maxPain = penalty() / ( IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased);
+        uint maxPain = penalty() / stakeMinusUnreleased;
         
-        uint tot = amt -  amt / (IERC20(address(stakedToken)).balanceOf(address(this)) - unreleased) * maxPain;
+        uint tot = amt -  amt / stakeMinusUnreleased * maxPain;
 
     return tot;
     }
+    
+    
     //2.5% fee on withdrawls back to holders
     //Withdrawl function for house
     function withdraw(uint256 amount, uint256 maxLoss) public virtual {
