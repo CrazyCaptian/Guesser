@@ -31,7 +31,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 }
 
 contract ForgeGuess is VRFConsumerBase {
-    
+
     bytes32 internal keyHash;
     uint256 internal fee;
     //Guess Storage
@@ -147,15 +147,15 @@ contract ForgeGuess is VRFConsumerBase {
          return ret;
      }
 
-function penalty () public view returns (uint num){
+    function penalty () public view returns (uint num){
 
-      uint tot = 0;
-      for(uint x = betid; x<betidIN; x++){
-          tot += winnings[x];
-      }
+        uint tot = 0;
+        for(uint x = betid; x<betidIN; x++){
+            tot += winnings[x];
+        }
       
       return tot;
- }
+    }
  
     //Incase of Chainlink failure
     function getBlank(uint256 extraLINK) public returns (bytes32 requestId) {
@@ -268,6 +268,12 @@ function penalty () public view returns (uint num){
         return v;
     }
     
+    //Withdrawl Estimator
+    function currentForge(address forWhom) public view returns (uint256) {
+        uint256 v = (975 * uOut(balanceOf(forWhom)) / 1000);
+        return v;
+    }
+    
 
         
     
@@ -285,9 +291,8 @@ function penalty () public view returns (uint num){
         
         uint256 amt = amount * stakeMinusUnreleased / totalSupply ;
         
-        uint256 maxPain = penalty() / stakeMinusUnreleased;
         
-        uint256 tot = amt -  amt / stakeMinusUnreleased * maxPain;
+         tot = amt -  ( amt * penalty() ) / stakeMinusUnreleased;
 
     return tot;
     }
@@ -305,8 +310,8 @@ function penalty () public view returns (uint num){
         uint OutEst = uOut(amount);
 
         unchecked {
-            _balances[msg.sender] -= OutEst;
-            totalSupply = totalSupply - OutEst;
+            _balances[msg.sender] -= amount;
+            totalSupply = totalSupply - amount;
             profitz[msg.sender] += int(OutEst * 975 / 1000);
         }
         
@@ -326,6 +331,7 @@ function penalty () public view returns (uint num){
         return block.number;
     }
 }
+
 
 /*
 *
